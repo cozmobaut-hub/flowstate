@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flowstate – Log In</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+  <main class="auth-shell">
+    <header class="fs-header">
+      <div class="fs-logo">flowstate</div>
+      <div class="fs-tagline">Fake-market for debate predictions.</div>
+    </header>
+
+    <section class="auth-panels">
+      <div class="auth-card">
+        <h2>Create account</h2>
+        <label for="signupUsername">Username</label>
+        <input id="signupUsername" type="text" autocomplete="username">
+        <label for="signupPassword">Password</label>
+        <input id="signupPassword" type="password" autocomplete="new-password">
+        <button id="signupBtn" class="btn-primary">Sign up</button>
+        <p class="auth-error" id="signupError"></p>
+      </div>
+
+      <div class="auth-card">
+        <h2>Log in</h2>
+        <label for="loginUsername">Username</label>
+        <input id="loginUsername" type="text" autocomplete="username">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" autocomplete="current-password">
+        <button id="loginBtn" class="btn-secondary">Log in</button>
+        <p class="auth-error" id="loginError"></p>
+      </div>
+    </section>
+
+    <p class="fs-footnote">
+      Flowstate uses fake dollars only. No real-money betting, no prizes.
+    </p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

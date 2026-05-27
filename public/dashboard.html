@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flowstate – Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+  <header class="topbar">
+    <div class="fs-logo">flowstate</div>
+    <div class="topbar-right">
+      <span id="topbarUser"></span>
+      <button id="logoutBtn" class="btn-ghost">Log out</button>
+    </div>
+  </header>
+
+  <main class="dashboard-shell">
+    <section class="balance-card">
+      <h2>Your balance</h2>
+      <p id="balanceText" class="balance-amount">$0</p>
+      <p class="balance-sub">Everyone starts at $300 fake.</p>
+    </section>
+
+    <section class="markets-shell">
+      <div class="markets-header">
+        <h2>Markets</h2>
+        <p class="muted">Debate outrounds from your league will show here.</p>
+      </div>
+
+      <div class="market-grid" id="marketGrid">
+        <div class="market-card">
+          <div class="market-title">Sample · TOC PF Octafinals</div>
+          <div class="market-meta">
+            <span>School A vs School B</span>
+            <span class="badge badge-open">OPEN</span>
+          </div>
+          <div class="market-odds-row">
+            <div class="outcome-pill">
+              <span>School A</span>
+              <span class="odds">-130</span>
+            </div>
+            <div class="outcome-pill">
+              <span>School B</span>
+              <span class="odds">+110</span>
+            </div>
+          </div>
+          <div class="market-footer">
+            <span class="muted">Deadline: 2026-10-05 20:00</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

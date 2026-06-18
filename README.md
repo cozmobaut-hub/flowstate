@@ -1,2 +1,4 @@
+![logo](logo.png)
+
 # flowstate
-The official betting app of STOAUSA
+The unofficial betting app of STOAUSA

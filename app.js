@@ -26,6 +26,55 @@ function usernameFromToken(token) {
   }
 }
 
+// --- user helpers for static (GitHub Pages) mode --------------------------------
+async function getCurrentUserObj() {
+  const token = getToken();
+  const username = usernameFromToken(token);
+  if (!username) return null;
+  const users = await readUsers();
+  const extra = JSON.parse(localStorage.getItem("fs_extra_users") || "[]");
+  const all = users.concat(extra);
+  let user = all.find(u => u.username === username);
+  if (!user) return null;
+
+  const overrides = JSON.parse(localStorage.getItem("fs_user_overrides") || "{}");
+  const o = overrides[username];
+  if (o && typeof o.balance === 'number') user.balance = o.balance;
+  return user;
+}
+
+function saveUserBalance(username, balance) {
+  const overrides = JSON.parse(localStorage.getItem("fs_user_overrides") || "{}");
+  overrides[username] = overrides[username] || {};
+  overrides[username].balance = balance;
+  localStorage.setItem("fs_user_overrides", JSON.stringify(overrides));
+}
+
+async function placeBet(marketId, amount, outcome) {
+  const user = await getCurrentUserObj();
+  if (!user) throw new Error("Not logged in");
+  const amt = Number(amount);
+  if (!Number.isFinite(amt) || amt <= 0) throw new Error("Invalid amount");
+  if (amt > user.balance) throw new Error("Insufficient funds");
+  const newBal = Math.round((user.balance - amt) * 100) / 100;
+  saveUserBalance(user.username, newBal);
+  // store a simple bets list (optional)
+  const bets = JSON.parse(localStorage.getItem("fs_bets") || "[]");
+  bets.push({ marketId, outcome, amount: amt, user: user.username, ts: Date.now() });
+  localStorage.setItem("fs_bets", JSON.stringify(bets));
+  return { balance: newBal };
+}
+
+async function getAllUsersForLeaderboard() {
+  const users = await readUsers();
+  const extra = JSON.parse(localStorage.getItem("fs_extra_users") || "[]");
+  const all = users.concat(extra).map(u => ({ username: u.username, balance: u.balance || 0 }));
+  const overrides = JSON.parse(localStorage.getItem("fs_user_overrides") || "{}");
+  return all.map(u => ({ username: u.username, balance: overrides[u.username]?.balance ?? u.balance }));
+}
+
+// -----------------------------------------------------------------------------------
+
 async function signup() {
   const username = document.getElementById("signupUsername").value.trim();
   const password = document.getElementById("signupPassword").value;

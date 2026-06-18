@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flowstate – Leaderboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+  <header class="topbar">
+    <div class="fs-logo">flowstate</div>
+    <div class="topbar-right">
+      <a href="dashboard.html" class="btn-link">Dashboard</a>
+      <a href="markets.html" class="btn-link">Markets</a>
+      <span id="topbarUser"></span>
+      <button id="logoutBtn" class="btn-ghost">Log out</button>
+    </div>
+  </header>
+
+  <main class="leaderboard-page">
+    <section>
+      <h2>Leaderboard</h2>
+      <p class="muted">Users ranked by fake balance (includes local bets).</p>
+      <table id="leaderboardTable" class="leaderboard-table">
+        <thead><tr><th>Rank</th><th>User</th><th>Balance</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    async function renderLeaderboard() {
+      const rows = document.querySelector('#leaderboardTable tbody');
+      rows.innerHTML = '';
+      const users = await getAllUsersForLeaderboard();
+      users.sort((a,b)=> (b.balance||0) - (a.balance||0));
+      users.forEach((u, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${idx+1}</td><td>${u.username}</td><td>$${(u.balance||0).toFixed(2)}</td>`;
+        rows.appendChild(tr);
+      });
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      renderLeaderboard();
+    });
+  </script>
+</body>
+</html>

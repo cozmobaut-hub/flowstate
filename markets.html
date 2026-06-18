@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flowstate – Markets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+  <header class="topbar">
+    <div class="fs-logo">flowstate</div>
+    <div class="topbar-right">
+      <a href="dashboard.html" class="btn-link">Dashboard</a>
+      <a href="leaderboard.html" class="btn-link">Leaderboard</a>
+      <span id="topbarUser"></span>
+      <button id="logoutBtn" class="btn-ghost">Log out</button>
+    </div>
+  </header>
+
+  <main class="markets-page">
+    <section class="markets-shell">
+      <div class="markets-header">
+        <h2>Markets — Place bets</h2>
+        <p class="muted">Use your balance to place bets. Bets are stored locally on this browser.</p>
+      </div>
+
+      <div id="marketsList" class="market-grid">
+        <!-- markets rendered here -->
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    const SAMPLE_MARKETS = [
+      { id: 'm1', title: 'Prologue Prelim 1', meta: 'AFF: Qulici-Flynn, NEG: Hawbaker-Owens', outcomes: [{key:'A',label:'AFF',odds:-130},{key:'B',label:'NEG',odds:+110}], deadline:'2026-10-05 20:00' },
+     
+    ];
+
+    function renderMarkets() {
+      const container = document.getElementById('marketsList');
+      container.innerHTML = '';
+      SAMPLE_MARKETS.forEach(m => {
+        const card = document.createElement('div'); card.className='market-card';
+        card.innerHTML = `
+          <div class="market-title">${m.title}</div>
+          <div class="market-meta"><span>${m.meta}</span> <span class="badge badge-open">OPEN</span></div>
+          <div class="market-odds-row"></div>
+          <div class="market-footer"><span class="muted">Deadline: ${m.deadline}</span></div>
+        `;
+        const oddsRow = card.querySelector('.market-odds-row');
+        m.outcomes.forEach(o => {
+          const pill = document.createElement('div'); pill.className='outcome-pill';
+          pill.innerHTML = `
+            <div><strong>${o.label}</strong> <span class="odds">${o.odds}</span></div>
+            <div style="margin-top:8px">
+              <input type="number" min="1" placeholder="Amount" class="bet-amount" data-market="${m.id}" data-outcome="${o.key}">
+              <button class="btn-primary btn-bet" data-market="${m.id}" data-outcome="${o.key}">Bet</button>
+            </div>
+          `;
+          oddsRow.appendChild(pill);
+        });
+        container.appendChild(card);
+      });
+
+      document.querySelectorAll('.btn-bet').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const market = btn.getAttribute('data-market');
+          const outcome = btn.getAttribute('data-outcome');
+          const input = document.querySelector(`.bet-amount[data-market="${market}"][data-outcome="${outcome}"]`);
+          const amt = Number(input.value);
+          const err = () => alert('Bet failed. Check balance and amount.');
+          try {
+            const res = await placeBet(market, amt, outcome);
+            alert(`Bet placed. New balance: $${res.balance}`);
+            // update balance on page
+            const b = document.getElementById('balanceText'); if (b) b.textContent = `$${res.balance}`;
+          } catch (errObj) {
+            err();
+          }
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderMarkets();
+      // reuse topbar behavior from app.js (logout will be wired there)
+    });
+  </script>
+</body>
+</html>

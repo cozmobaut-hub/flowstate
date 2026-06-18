@@ -99,7 +99,6 @@ const SAMPLE_MARKETS = [
     ],
     deadline: "2026-06-18 12:00"
   }
-  // add more markets here
 ];
 
 function renderMarketsInto(containerId, options = { showBetControls: false }) {

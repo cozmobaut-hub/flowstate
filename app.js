@@ -73,7 +73,125 @@ async function getAllUsersForLeaderboard() {
   return all.map(u => ({ username: u.username, balance: overrides[u.username]?.balance ?? u.balance }));
 }
 
-// -----------------------------------------------------------------------------------
+// ----------------- SHARED MARKETS -----------------
+
+const SAMPLE_MARKETS = [
+  {
+    id: 'm1',
+    title: 'Prologue Prelim 1',
+    meta: 'AFF: Qulici-Flynn, NEG: Hawbaker-Owens',
+    outcomes: [
+      { key: 'A', label: 'AFF', odds: -130 },
+      { key: 'B', label: 'NEG', odds: +110 }
+    ],
+    deadline: '2026-10-05 20:00'
+  }
+  // add more markets here
+
+  {
+    "id": "m2",
+    "title": "Prologue Prelim 2",
+    "meta": "AFF: Hawbaker-Owens, NEG: Flood-Maganda",
+    "outcomes": [
+      {
+        "key": "AFF",
+        "label": "Hawbaker-Owens",
+        "odds": 80
+      },
+      {
+        "key": "NEG",
+        "label": "Flood-Maganda",
+        "odds": -90
+      }
+    ],
+    "deadline": "2026-06-18 12:00"
+  },];
+
+function renderMarketsInto(containerId, options = { showBetControls: false }) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  SAMPLE_MARKETS.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'market-card';
+    card.innerHTML = `
+      <div class="market-title">${m.title}</div>
+      <div class="market-meta">
+        <span>${m.meta}</span>
+        <span class="badge badge-open">OPEN</span>
+      </div>
+      <div class="market-odds-row"></div>
+      <div class="market-footer">
+        <span class="muted">Deadline: ${m.deadline}</span>
+      </div>
+    `;
+
+    const oddsRow = card.querySelector('.market-odds-row');
+
+    m.outcomes.forEach(o => {
+      const pill = document.createElement('div');
+      pill.className = 'outcome-pill';
+
+      if (options.showBetControls) {
+        // full version for markets.html
+        pill.innerHTML = `
+          <div>
+            <strong>${o.label}</strong>
+            <span class="odds">${o.odds}</span>
+          </div>
+          <div style="margin-top:8px">
+            <input type="number" min="1" placeholder="Amount"
+                   class="bet-amount"
+                   data-market="${m.id}"
+                   data-outcome="${o.key}">
+            <button class="btn-primary btn-bet"
+                    data-market="${m.id}"
+                    data-outcome="${o.key}">
+              Bet
+            </button>
+          </div>
+        `;
+      } else {
+        // simple read-only version for dashboard
+        pill.innerHTML = `
+          <span>${o.label}</span>
+          <span class="odds">${o.odds}</span>
+        `;
+      }
+
+      oddsRow.appendChild(pill);
+    });
+
+    container.appendChild(card);
+  });
+
+  if (options.showBetControls) {
+    document.querySelectorAll('.btn-bet').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const market = btn.getAttribute('data-market');
+        const outcome = btn.getAttribute('data-outcome');
+        const input = document.querySelector(
+          `.bet-amount[data-market="${market}"][data-outcome="${outcome}"]`
+        );
+        const amt = Number(input.value);
+        const err = () => alert('Bet failed. Check balance and amount.');
+
+        try {
+          const res = await placeBet(market, amt, outcome);
+          alert(`Bet placed. New balance: $${res.balance}`);
+          const b = document.getElementById('balanceText');
+          if (b) b.textContent = `$${res.balance}`;
+        } catch {
+          err();
+        }
+      });
+    });
+  }
+}
+
+// ----------------- AUTH / UI -----------------
 
 async function signup() {
   const username = document.getElementById("signupUsername").value.trim();
@@ -177,10 +295,14 @@ async function loadMe() {
   const user = all.find(u => u.username === username);
   if (!user) { clearToken(); window.location.href = "index.html"; return; }
 
+  const overrides = JSON.parse(localStorage.getItem("fs_user_overrides") || "{}");
+  const o = overrides[username];
+  const effectiveBalance = (o && typeof o.balance === 'number') ? o.balance : user.balance;
+
   const topbarUser = document.getElementById("topbarUser");
   const balanceText = document.getElementById("balanceText");
   if (topbarUser) topbarUser.textContent = user.username;
-  if (balanceText) balanceText.textContent = `$${user.balance}`;
+  if (balanceText) balanceText.textContent = `$${effectiveBalance}`;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -197,7 +319,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // any page that cares about user/balance
   if (document.getElementById("balanceText")) {
     loadMe();
+  }
+
+  // page-specific markets
+  if (document.getElementById("marketsList")) {
+    // full betting UI on markets page
+    renderMarketsInto("marketsList", { showBetControls: true });
+  }
+  if (document.getElementById("marketGrid")) {
+    // read-only preview on dashboard
+    renderMarketsInto("marketGrid", { showBetControls: false });
   }
 });
